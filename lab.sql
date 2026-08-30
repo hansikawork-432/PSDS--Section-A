@@ -1,4 +1,3 @@
-
 IF OBJECT_ID('Loan', 'U') IS NOT NULL DROP TABLE Loan;
 IF OBJECT_ID('Book', 'U') IS NOT NULL DROP TABLE Book;
 IF OBJECT_ID('Member', 'U') IS NOT NULL DROP TABLE Member;
@@ -48,6 +47,24 @@ INSERT INTO Book (book_id, title, author_id, published_year) VALUES
 INSERT INTO Loan (loan_id, book_id, member_id, loan_date, return_date) VALUES 
 (301, 201, 101, '2024-03-01', NULL),
 (302, 202, 102, '2024-03-05', '2024-03-12');
+
+SELECT * FROM Author;
+
+SELECT * FROM Member;
+
+SELECT b.book_id, b.title, a.name AS author_name, b.published_year 
+FROM Book b
+JOIN Author a ON b.author_id = a.author_id;
+
+SELECT 
+    l.loan_id,
+    m.name AS member_name,
+    b.title AS book_title,
+    l.loan_date
+FROM Loan l
+JOIN Book b ON l.book_id = b.book_id
+JOIN Member m ON l.member_id = m.member_id
+WHERE l.return_date IS NULL;
 
 SELECT 
     l.loan_id,
