@@ -1,116 +1,96 @@
-#include <iostream>
-#include <string>
-#include <stack>
-#include <cctype>
-#include <cmath>
+import math
 
-using namespace std;
+def get_precedence(op):
+    if op in ('+', '-'):
+        return 1
+    if op in ('*', '/'):
+        return 2
+    if op == '^':
+        return 3
+    return 0
 
-int getPrecedence(char op) {
-    if (op == '+' || op == '-') return 1;
-    if (op == '*' || op == '/') return 2;
-    if (op == '^') return 3;
-    return 0;
-}
+def is_operator(c):
+    return c in ('+', '-', '*', '/', '^')
 
-bool isOperator(char c) {
-    return c == '+' || c == '-' || c == '*' || c == '/' || c == '^';
-}
+def infix_to_postfix(infix):
+    op_stack = []
+    postfix = []
+    i = 0
+    n = len(infix)
 
-string infixToPostfix(const string& infix) {
-    stack<char> opStack;
-    string postfix = "";
+    while i < n:
+        c = infix[i]
 
-    for (size_t i = 0; i < infix.length(); i++) {
-        char c = infix[i];
+        if c.isspace():
+            i += 1
+            continue
 
-        if (isspace(c)) continue;
+        if c.isalnum():
+            operand = ""
+            while i < n and infix[i].isalnum():
+                operand += infix[i]
+                i += 1
+            postfix.append(operand)
+            continue
 
-        if (isalnum(c)) {
-            while (i < infix.length() && isalnum(infix[i])) {
-                postfix += infix[i];
-                i++;
-            }
-            postfix += " ";
-            i--;
-        }
-        else if (c == '(') {
-            opStack.push(c);
-        }
-        else if (c == ')') {
-            while (!opStack.empty() && opStack.top() != '(') {
-                postfix += opStack.top();
-                postfix += " ";
-                opStack.pop();
-            }
-            if (!opStack.empty()) opStack.pop();
-        }
-        else if (isOperator(c)) {
-            while (!opStack.empty() && getPrecedence(opStack.top()) >= getPrecedence(c)) {
-                if (c == '^' && opStack.top() == '^') break;
-                postfix += opStack.top();
-                postfix += " ";
-                opStack.pop();
-            }
-            opStack.push(c);
-        }
-    }
+        elif c == '(':
+            op_stack.append(c)
 
-    while (!opStack.empty()) {
-        postfix += opStack.top();
-        postfix += " ";
-        opStack.pop();
-    }
+        elif c == ')':
+            while op_stack and op_stack[-1] != '(':
+                postfix.append(op_stack.pop())
+            if op_stack:
+                op_stack.pop()
 
-    return postfix;
-}
+        elif is_operator(c):
+            while (op_stack and 
+                   op_stack[-1] != '(' and 
+                   get_precedence(op_stack[-1]) >= get_precedence(c)):
+                if c == '^' and op_stack[-1] == '^':
+                    break
+                postfix.append(op_stack.pop())
+            op_stack.append(c)
 
-int evaluatePostfix(const string& postfix) {
-    stack<int> valStack;
+        i += 1
 
-    for (size_t i = 0; i < postfix.length(); i++) {
-        char c = postfix[i];
+    while op_stack:
+        postfix.append(op_stack.pop())
 
-        if (isspace(c)) continue;
+    return " ".join(postfix)
 
-        if (isdigit(c)) {
-            int num = 0;
-            while (i < postfix.length() && isdigit(postfix[i])) {
-                num = num * 10 + (postfix[i] - '0');
-                i++;
-            }
-            valStack.push(num);
-            i--;
-        }
-        else if (isOperator(c)) {
-            int val2 = valStack.top(); valStack.pop();
-            int val1 = valStack.top(); valStack.pop();
+def evaluate_postfix(postfix):
+    val_stack = []
+    tokens = postfix.split()
 
-            switch (c) {
-                case '+': valStack.push(val1 + val2); break;
-                case '-': valStack.push(val1 - val2); break;
-                case '*': valStack.push(val1 * val2); break;
-                case '/': valStack.push(val1 / val2); break;
-                case '^': valStack.push(pow(val1, val2)); break;
-            }
-        }
-    }
+    for token in tokens:
+        if token.isdigit():
+            val_stack.append(int(token))
+        elif is_operator(token):
+            val2 = val_stack.pop()
+            val1 = val_stack.pop()
 
-    return valStack.top();
-}
+            if token == '+':
+                val_stack.append(val1 + val2)
+            elif token == '-':
+                val_stack.append(val1 - val2)
+            elif token == '*':
+                val_stack.append(val1 * val2)
+            elif token == '/':
+                val_stack.append(int(val1 / val2))
+            elif token == '^':
+                val_stack.append(int(math.pow(val1, val2)))
 
-int main() {
-    string symbolicInfix = "A+(B*C)";
-    cout << "Infix (Symbolic): " << symbolicInfix << endl;
-    cout << "Postfix Output  : " << infixToPostfix(symbolicInfix) << endl;
-    
+    return val_stack[-1]
 
-    string numericInfix = "5 + ( 3 * 4 ) - 8 / 2";
-    string postfixExpr = infixToPostfix(numericInfix);
+if __name__ == "__main__":
+    symbolic_infix = "A+(B*C)"
+    print("Infix (Symbolic):", symbolic_infix)
+    print("Postfix Output  :", infix_to_postfix(symbolic_infix))
+    print("-" * 42)
 
-    cout << "Infix (Numeric) : " << numericInfix << endl;
-    cout << "Converted Postfix: " << postfixExpr << endl;
-    cout << "Evaluated Result: " << evaluatePostfix(postfixExpr) << endl;
+    numeric_infix = "5 + ( 3 * 4 ) - 8 / 2"
+    postfix_expr = infix_to_postfix(numeric_infix)
 
-    return 0;
-}
+    print("Infix (Numeric) :", numeric_infix)
+    print("Converted Postfix:", postfix_expr)
+    print("Evaluated Result:", evaluate_postfix(postfix_expr))
