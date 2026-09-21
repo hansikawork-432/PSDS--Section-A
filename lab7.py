@@ -1,114 +1,144 @@
-class MinHeap:
+import sys
+class MaxHeap:
+
     def __init__(self):
         self.heap = []
 
-    def push(self, val):
-        self.heap.append(val)
-        self._sift_up(len(self.heap) - 1)
+    def insert(self, value):
+        self.heap.append(value)
+        i = len(self.heap) - 1
+        while i > 0:
+            parent = (i - 1) // 2
+            if self.heap[parent] >= self.heap[i]:
+                break
+            self.heap[parent], self.heap[i] = self.heap[i], self.heap[parent]
+            i = parent
 
-    def pop(self):
+    def extract_max(self):
         if not self.heap:
             return None
-        if len(self.heap) == 1:
-            return self.heap.pop()
-        root = self.heap[0]
-        self.heap[0] = self.heap.pop()
-        self._sift_down(0)
-        return root
+        result = self.heap[0]
+        self.heap[0] = self.heap[-1]
+        self.heap.pop()
+        i = 0
+        while True:
+            left = 2 * i + 1
+            right = 2 * i + 2
+            largest = i
+            if left < len(self.heap) and self.heap[left] > self.heap[largest]:
+                largest = left
+            if right < len(self.heap) and self.heap[right] > self.heap[largest]:
+                largest = right
+            if largest == i:
+                break
+            self.heap[i], self.heap[largest] = self.heap[largest], self.heap[i]
+            i = largest
+        return result
 
-    def _sift_up(self, idx):
-        parent = (idx - 1) // 2
-        if idx > 0 and self.heap[idx] < self.heap[parent]:
-            self.heap[idx], self.heap[parent] = self.heap[parent], self.heap[idx]
-            self._sift_up(parent)
-
-    def _sift_down(self, idx):
-        smallest = idx
-        left = 2 * idx + 1
-        right = 2 * idx + 2
-        if left < len(self.heap) and self.heap[left] < self.heap[smallest]:
-            smallest = left
-        if right < len(self.heap) and self.heap[right] < self.heap[smallest]:
-            smallest = right
-        if smallest != idx:
-            self.heap[idx], self.heap[smallest] = self.heap[smallest], self.heap[idx]
-            self._sift_down(smallest)
+    def display(self):
+        print(*self.heap)
 
 
-class PriorityQueue:
-    def __init__(self):
-        self.min_heap = MinHeap()
-
-    def enqueue(self, val):
-        self.min_heap.push(val)
-
-    def dequeue(self):
-        return self.min_heap.pop()
-
-
-def heap_sort(arr):
-    pq = PriorityQueue()
-    for num in arr:
-        pq.enqueue(num)
-    sorted_arr = []
-    for _ in range(len(arr)):
-        sorted_arr.append(pq.dequeue())
-    return sorted_arr
+def heapify(a, n, i):
+    largest = i
+    left = 2 * i + 1
+    right = 2 * i + 2
+    if left < n and a[left] > a[largest]:
+        largest = left
+    if right < n and a[right] > a[largest]:
+        largest = right
+    if largest != i:
+        a[i], a[largest] = a[largest], a[i]
+        heapify(a, n, largest)
 
 
-def maximize_adjacent_difference(arr):
-    arr.sort()
-    res = []
-    left, right = 0, len(arr) - 1
-    while left <= right:
-        res.append(arr[left])
-        left += 1
-        if left <= right:
-            res.append(arr[right])
-            right -= 1
-    
-    total_diff = 0
-    for i in range(len(res) - 1):
-        total_diff += abs(res[i] - res[i+1])
-        
-    return res, total_diff
+def heap_sort(a):
+    n = len(a)
+    for i in range(n // 2 - 1, -1, -1):
+        heapify(a, n, i)
+    for i in range(n - 1, 0, -1):
+        a[0], a[i] = a[i], a[0]
+        heapify(a, i, 0)
 
 
-def smallest_subarray_greater_than_target(arr, target):
-    min_len = float('inf')
-    current_sum = 0
-    left = 0
-    
-    for right in range(len(arr)):
-        current_sum += arr[right]
-        
-        while current_sum > target:
-            min_len = min(min_len, right - left + 1)
-            current_sum -= arr[left]
-            left += 1
-            
-    return min_len if min_len != float('inf') else -1
+heap_vals = list(
+    map(
+        int,
+        input("Enter elements for Max Heap (space-separated): ").strip().split(
+        ),
+    )
+)
+pq = MaxHeap()
+for val in heap_vals:
+    pq.insert(val)
 
+print("Max Heap / Priority Queue:", end=" ")
+pq.display()
+print("Highest Priority Element:", pq.extract_max())
 
-if __name__ == "__main__":
-    print("=== Problem 1: Priority Queue & Heap Sort ===")
-    pq = PriorityQueue()
-    for item in [5, 3, 8, 1, 4]:
-        pq.enqueue(item)
-    print("Priority Queue Dequeue:", [pq.dequeue() for _ in range(5)])
-    
-    unsorted_arr = [12, 11, 13, 5, 6, 7]
-    print("Heap Sort Output:", heap_sort(unsorted_arr))
-    print()
+sort_vals = list(
+    map(
+        int,
+        input("Enter elements for Heap Sort (spaced): ")
+        .strip()
+        .split(),
+    )
+)
+heap_sort(sort_vals)
+print("Heap Sort:", *sort_vals)
 
-    print("=== Problem 2: Maximize Adjacent Difference ===")
-    p2_input = [4, 2, 7, 1]
-    rearranged, sum_diff = maximize_adjacent_difference(p2_input)
-    print("Rearranged Array:", rearranged)
-    print("Total Sum of Differences:", sum_diff)
-    print()
+a = list(
+    map(
+        int,
+        input("Enter elements for Rearranging Array (spaced): ")
+        .strip()
+        .split(),
+    )
+)
+a.sort()
+n = len(a)
+result = []
+left = 0
+right = n - 1
 
-    print("=== Problem 3: Smallest Subarray Sum > Target ===")
-    p3_arr = [2, 1, 5, 2, 3, 2]
-    p3_target = 7
-    print("Smallest Subarray Length:", smallest_subarray_greater_than_target(p3_arr, p3_target))
+while left <= right:
+    if left == right:
+        result.append(a[left])
+        break
+    result.append(a[left])
+    left += 1
+    result.append(a[right])
+    right -= 1
+
+total_sum = 0
+for i in range(1, n):
+    total_sum += abs(result[i] - result[i - 1])
+
+print("Rearranged Array:", *result)
+print(f"Total Sum = {total_sum}")
+
+arr = list(
+    map(
+        int,
+        input("Enter array for Subarray search (space-separated): ")
+        .strip()
+        .split(),
+    )
+)
+target = int(input("Enter target sum: "))
+n_arr = len(arr)
+left_window = 0
+current_sum = 0
+min_length = sys.maxsize
+
+for right_window in range(n_arr):
+    current_sum += arr[right_window]
+    while current_sum > target:
+        min_length = min(min_length, right_window - left_window + 1)
+        current_sum -= arr[left_window]
+        left_window += 1
+
+if min_length == sys.maxsize:
+    print(-1)
+else:
+    print(f"Smallest Subarray Length = {min_length}")
