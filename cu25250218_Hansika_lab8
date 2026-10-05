@@ -1,0 +1,76 @@
+# Labsheet 8
+
+import heapq
+
+# Question 1
+n, k = map(int, input().split())
+arr = list(map(int, input().split()))
+
+window_sum = sum(arr[:k])
+max_sum = window_sum
+
+for i in range(k, n):
+    window_sum += arr[i] - arr[i - k]
+    max_sum = max(max_sum, window_sum)
+
+print("Maximum Sum:", max_sum)
+
+
+# Question 2
+s = input()
+
+seen = set()
+left = 0
+max_length = 0
+
+for right in range(len(s)):
+    while s[right] in seen:
+        seen.remove(s[left])
+        left += 1
+
+    seen.add(s[right])
+    max_length = max(max_length, right - left + 1)
+
+print("Longest Substring Length:", max_length)
+
+
+# Question 3
+n, m, k = map(int, input().split())
+
+graph = [[] for _ in range(n + 1)]
+
+for _ in range(m):
+    u, v, w = map(int, input().split())
+    graph[u].append((v, w))
+    graph[v].append((u, w))
+
+INF = float('inf')
+dist = [[INF] * (k + 1) for _ in range(n + 1)]
+
+dist[1][0] = 0
+pq = [(0, 1, 0)]
+
+answer = -1
+
+while pq:
+    cost, node, edges = heapq.heappop(pq)
+
+    if cost != dist[node][edges]:
+        continue
+
+    if node == n:
+        answer = cost
+        break
+
+    if edges == k:
+        continue
+
+    for next_node, weight in graph[node]:
+        new_cost = cost + weight
+        new_edges = edges + 1
+
+        if new_cost < dist[next_node][new_edges]:
+            dist[next_node][new_edges] = new_cost
+            heapq.heappush(pq, (new_cost, next_node, new_edges))
+
+print("Shortest Path:", answer)
