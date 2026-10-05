@@ -1,0 +1,16 @@
+def solve():
+    N = int(input("Enter N: "))
+    A = list(map(int, input("Enter array elements: ").split()))
+
+    if all(x == A[0] for x in A):
+        return abs(A[0])
+    else:
+        return -1
+
+
+T = int(input("Enter number of test cases: "))
+
+for i in range(T):
+    print(f"\nTest Case {i + 1}:")
+    answer = solve()
+    print("Output:", answer)
